@@ -1,135 +1,208 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include<assert.h>
-#define MAX_CHARACTERS 1005
-#define MAX_PARAGRAPHS 5
-char* kth_word_in_mth_sentence_of_nth_paragraph(char**** document, int k, int m, int n) {
-    return document[n-1][m-1][k-1];
-}
+#include <time.h>
 
-char** kth_sentence_in_mth_paragraph(char**** document, int k, int m) { 
-    return document[m-1][k-1];
-}
+#define MIN_ELEMENT 1
+#define MAX_ELEMENT 1000000
+int sum(int count, ...) {
+    va_list args;
+    va_start(args, count);
 
-char*** kth_paragraph(char**** document, int k) {
-    return document[k-1];
-}
+    int result = 0;
+    for (int i = 0; i < count; i++) {
+        result += va_arg(args, int);
+    }
 
-int getWord(char ** sen, int s, char * text){
-    int chs = 1;
-    for(int i = 0; text[i] != ' ' && text[i] != '\n' && text[i] != 0 && text[i] != '.'; i++) chs++;
-    sen[s] = (char *) calloc(chs, 1);
-    for(int i = 0; i < chs-1; i++) sen[s][i] = text[i];
-    for(int i = 0; chs + i < strlen(text); i++) if(('a' <= text[chs + i] && text[chs + i] <= 'z') || ('A' <= text[chs + i] && text[chs + i] <= 'Z')) return chs + i;
-    return strlen(text);
-}
-
-int getSentence(char *** par, int s, char * text){
-    int words = 1;
-    for(int i = 0; text[i] != '\n' && text[i] != 0 && text[i] != '.'; i++) if(text[i] == ' ') words++;
-    par[s] = (char **) calloc(words, sizeof(char *));
-    int newindex = 0;
-    for(int i = 0; i < words; i++) newindex += getWord(par[s], i, text+newindex);
-    return newindex;
-}
-
-
-
-int getParagraph(char **** doc, int p, char * text){
-    int sentences = 0;
-    for(int i = 0; text[i] != '\n' && text[i] != 0; i++) if(text[i] == '.') sentences++;
-    doc[p] = (char ***) calloc(sentences, sizeof(char **));
-    int newindex = 0;
-    for(int i = 0; i < sentences; i++) newindex += getSentence(doc[p], i, text+newindex);
-    return newindex;
-}
-
-char**** get_document(char* text) {
-    int paragraphs = 1;
-    for(int i = 0; i < strlen(text); i++) if(text[i] == '\n') paragraphs++;
-    
-    char **** result = (char ****) calloc(paragraphs, sizeof(char***));
-    int newindex = 0;
-    for(int i = 0; i < paragraphs; i++) newindex += getParagraph(result, i, text+newindex);
+    va_end(args);
     return result;
 }
 
+int min(int count, ...) {
+    va_list args;
+    va_start(args, count);
 
-char* get_input_text() {	
-    int paragraph_count;
-    scanf("%d", &paragraph_count);
-
-    char p[MAX_PARAGRAPHS][MAX_CHARACTERS], doc[MAX_CHARACTERS];
-    memset(doc, 0, sizeof(doc));
-    getchar();
-    for (int i = 0; i < paragraph_count; i++) {
-        scanf("%[^\n]%*c", p[i]);
-        strcat(doc, p[i]);
-        if (i != paragraph_count - 1)
-            strcat(doc, "\n");
+    int minimum = va_arg(args, int);
+    for (int i = 1; i < count; i++) {
+        int current = va_arg(args, int);
+        if (current < minimum) {
+            minimum = current;
+        }
     }
 
-    char* returnDoc = (char*)malloc((strlen (doc)+1) * (sizeof(char)));
-    strcpy(returnDoc, doc);
-    return returnDoc;
+    va_end(args);
+    return minimum;
 }
 
-void print_word(char* word) {
-    printf("%s", word);
-}
+int max(int count, ...) {
+    va_list args;
+    va_start(args, count);
 
-void print_sentence(char** sentence) {
-    int word_count;
-    scanf("%d", &word_count);
-    for(int i = 0; i < word_count; i++){
-        printf("%s", sentence[i]);
-        if( i != word_count - 1)
-            printf(" ");
+    int maximum = va_arg(args, int);
+    for (int i = 1; i < count; i++) {
+        int current = va_arg(args, int);
+        if (current > maximum) {
+            maximum = current;
+        }
     }
-} 
 
-void print_paragraph(char*** paragraph) {
-    int sentence_count;
-    scanf("%d", &sentence_count);
-    for (int i = 0; i < sentence_count; i++) {
-        print_sentence(*(paragraph + i));
-        printf(".");
-    }
+    va_end(args);
+    return maximum;
 }
 
-int main() 
+int test_implementations_by_sending_three_elements() {
+    srand(time(NULL));
+    
+    int elements[3];
+    
+    elements[0] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[1] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[2] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    
+    fprintf(stderr, "Sending following three elements:\n");
+    for (int i = 0; i < 3; i++) {
+        fprintf(stderr, "%d\n", elements[i]);
+    }
+    
+    int elements_sum = sum(3, elements[0], elements[1], elements[2]);
+    int minimum_element = min(3, elements[0], elements[1], elements[2]);
+    int maximum_element = max(3, elements[0], elements[1], elements[2]);
+
+    fprintf(stderr, "Your output is:\n");
+    fprintf(stderr, "Elements sum is %d\n", elements_sum);
+    fprintf(stderr, "Minimum element is %d\n", minimum_element);
+    fprintf(stderr, "Maximum element is %d\n\n", maximum_element);
+    
+    int expected_elements_sum = 0;
+    for (int i = 0; i < 3; i++) {
+        if (elements[i] < minimum_element) {
+            return 0;
+        }
+        
+        if (elements[i] > maximum_element) {
+            return 0;
+        }
+        
+        expected_elements_sum += elements[i];
+    }
+    
+    return elements_sum == expected_elements_sum;
+}
+
+int test_implementations_by_sending_five_elements() {
+    srand(time(NULL));
+    
+    int elements[5];
+    
+    elements[0] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[1] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[2] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[3] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[4] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    
+    fprintf(stderr, "Sending following five elements:\n");
+    for (int i = 0; i < 5; i++) {
+        fprintf(stderr, "%d\n", elements[i]);
+    }
+    
+    int elements_sum = sum(5, elements[0], elements[1], elements[2], elements[3], elements[4]);
+    int minimum_element = min(5, elements[0], elements[1], elements[2], elements[3], elements[4]);
+    int maximum_element = max(5, elements[0], elements[1], elements[2], elements[3], elements[4]);
+    
+    fprintf(stderr, "Your output is:\n");
+    fprintf(stderr, "Elements sum is %d\n", elements_sum);
+    fprintf(stderr, "Minimum element is %d\n", minimum_element);
+    fprintf(stderr, "Maximum element is %d\n\n", maximum_element);
+    
+    int expected_elements_sum = 0;
+    for (int i = 0; i < 5; i++) {
+        if (elements[i] < minimum_element) {
+            return 0;
+        }
+        
+        if (elements[i] > maximum_element) {
+            return 0;
+        }
+        
+        expected_elements_sum += elements[i];
+    }
+    
+    return elements_sum == expected_elements_sum;
+}
+
+int test_implementations_by_sending_ten_elements() {
+    srand(time(NULL));
+    
+    int elements[10];
+    
+    elements[0] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[1] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[2] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[3] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[4] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[5] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[6] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[7] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[8] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    elements[9] = rand() % (MAX_ELEMENT - MIN_ELEMENT + 1) + MIN_ELEMENT;
+    
+    fprintf(stderr, "Sending following ten elements:\n");
+    for (int i = 0; i < 10; i++) {
+        fprintf(stderr, "%d\n", elements[i]);
+    }
+    
+    int elements_sum = sum(10, elements[0], elements[1], elements[2], elements[3], elements[4],
+                           elements[5], elements[6], elements[7], elements[8], elements[9]);
+    int minimum_element = min(10, elements[0], elements[1], elements[2], elements[3], elements[4],
+                           elements[5], elements[6], elements[7], elements[8], elements[9]);
+    int maximum_element = max(10, elements[0], elements[1], elements[2], elements[3], elements[4],
+                           elements[5], elements[6], elements[7], elements[8], elements[9]);
+    
+    fprintf(stderr, "Your output is:\n");
+    fprintf(stderr, "Elements sum is %d\n", elements_sum);
+    fprintf(stderr, "Minimum element is %d\n", minimum_element);
+    fprintf(stderr, "Maximum element is %d\n\n", maximum_element);
+    
+    int expected_elements_sum = 0;
+    for (int i = 0; i < 10; i++) {
+        if (elements[i] < minimum_element) {
+            return 0;
+        }
+        
+        if (elements[i] > maximum_element) {
+            return 0;
+        }
+        
+        expected_elements_sum += elements[i];
+    }
+    
+    return elements_sum == expected_elements_sum;
+}
+
+int main ()
 {
-    char* text = get_input_text();
-    char**** document = get_document(text);
-
-    int q;
-    scanf("%d", &q);
-
-    while (q--) {
-        int type;
-        scanf("%d", &type);
-
-        if (type == 3){
-            int k, m, n;
-            scanf("%d %d %d", &k, &m, &n);
-            char* word = kth_word_in_mth_sentence_of_nth_paragraph(document, k, m, n);
-            print_word(word);
+    int number_of_test_cases;
+    scanf("%d", &number_of_test_cases);
+    
+    while (number_of_test_cases--) {
+        if (test_implementations_by_sending_three_elements()) {
+            printf("Correct Answer\n");
+        } else {
+            printf("Wrong Answer\n");
         }
-
-        else if (type == 2){
-            int k, m;
-            scanf("%d %d", &k, &m);
-            char** sentence = kth_sentence_in_mth_paragraph(document, k, m);
-            print_sentence(sentence);
+        
+        if (test_implementations_by_sending_five_elements()) {
+            printf("Correct Answer\n");
+        } else {
+            printf("Wrong Answer\n");
         }
-
-        else{
-            int k;
-            scanf("%d", &k);
-            char*** paragraph = kth_paragraph(document, k);
-            print_paragraph(paragraph);
+        
+        if (test_implementations_by_sending_ten_elements()) {
+            printf("Correct Answer\n");
+        } else {
+            printf("Wrong Answer\n");
         }
-        printf("\n");
-    }     
+    }
+    
+    return 0;
 }
